@@ -1,27 +1,36 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import { saveActiveSession, getActiveSession, clearActiveSession } from '../utils/sessionStorage';
+import { useAuth } from './AuthContext';
 
 const ParkingSessionContext = createContext();
 
 export function ParkingSessionProvider({ children }) {
+  const { user } = useAuth();
   const [activeSession, setActiveSession] = useState(null);
-  const [elapsed, setElapsed] = useState(0); // seconds since session started
+  const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef(null);
 
-  // Restore session on app start
+  // Restore session only for the currently logged-in user
   useEffect(() => {
+    // Reset state immediately when user changes
+    setActiveSession(null);
+    setElapsed(0);
+
+    if (!user?.id) return;
+
     (async () => {
       const saved = await getActiveSession();
-      if (saved) {
+      if (saved && saved.userId === user.id) {
         setActiveSession(saved);
-        // Calculate elapsed time from entry time
         const entryTime = new Date(saved.entryTime).getTime();
-        const now = Date.now();
-        setElapsed(Math.floor((now - entryTime) / 1000));
+        setElapsed(Math.floor((Date.now() - entryTime) / 1000));
+      } else {
+        // No session or belongs to different user — clear it
+        await clearActiveSession();
       }
     })();
-  }, []);
+  }, [user?.id]);
 
   // Start/stop timer when session changes
   useEffect(() => {
@@ -41,6 +50,7 @@ export function ParkingSessionProvider({ children }) {
   const startSession = async (session) => {
     const sessionWithTime = {
       ...session,
+      userId: user?.id,  // tie session to current user
       entryTime: session.entryTime || new Date().toISOString(),
     };
     setActiveSession(sessionWithTime);

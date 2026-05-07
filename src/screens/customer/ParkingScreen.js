@@ -29,15 +29,16 @@ export default function ParkingScreen({ navigation }) {
   const border = theme.border;
 
   useEffect(() => {
-    if (!user?.id) return;
-    Promise.all([
-      client.get(`/api/vehicles/my/${user.id}`),
-      client.get('/api/payments').catch(() => ({ data: [] })),
-    ]).then(([vRes, pRes]) => {
-      setVehicles(vRes.data || []);
-      setRecentActivity((pRes.data || []).slice(0, 5));
-    }).catch(console.log)
-      .finally(() => setLoading(false));
+    if (user?.id) {
+      Promise.all([
+        client.get(`/api/vehicles/my/${user.id}`),
+        client.get(`/api/payments/my/${user.id}`).catch(() => ({ data: [] })),
+      ]).then(([vRes, pRes]) => {
+        setVehicles(vRes.data || []);
+        setRecentActivity((pRes.data || []).slice(0, 5));
+      }).catch(console.log)
+        .finally(() => setLoading(false));
+    }
   }, [user?.id]);
 
   const startParkingSession = async () => {

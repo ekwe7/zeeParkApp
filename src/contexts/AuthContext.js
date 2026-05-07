@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as SplashScreen from 'expo-splash-screen';
 import { AppState } from 'react-native';
 import client from '../api/client';
+import { clearActiveSession } from '../utils/sessionStorage';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -21,6 +22,7 @@ export function AuthProvider({ children }) {
     await client.post('/api/auth/logout').catch(() => {});
     await SecureStore.deleteItemAsync('token');
     await SecureStore.deleteItemAsync('user');
+    await clearActiveSession(); // clear parking session on logout
     setToken(null);
     setUser(null);
     setIsLoggedIn(false);

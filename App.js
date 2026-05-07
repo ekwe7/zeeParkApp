@@ -20,11 +20,11 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <NetworkProvider>
-          <ParkingSessionProvider>
-            <AuthProvider>
+          <AuthProvider>
+            <ParkingSessionProvider>
               <AppWithTracker />
-            </AuthProvider>
-          </ParkingSessionProvider>
+            </ParkingSessionProvider>
+          </AuthProvider>
         </NetworkProvider>
       </ThemeProvider>
     </SafeAreaProvider>
