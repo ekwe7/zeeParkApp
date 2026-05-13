@@ -7,7 +7,7 @@ import OfflineBanner from '../../components/OfflineBanner';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
-  const { theme } = useTheme();
+  const { theme, resetTheme } = useTheme();
   const { isConnected } = useNetwork();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -19,6 +19,7 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     try {
       await login(username, password);
+      resetTheme(); // always start in light mode after login
     } catch (e) {
       Alert.alert('Login failed', e.response?.data?.error || 'Invalid credentials');
     } finally {

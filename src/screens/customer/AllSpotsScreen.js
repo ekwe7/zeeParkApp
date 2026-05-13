@@ -13,7 +13,7 @@ export default function AllSpotsScreen({ navigation, route }) {
   const [filter, setFilter] = useState('available'); // 'available' | 'all'
 
   useEffect(() => {
-    client.get('/api/admin/spots')
+    client.get('/api/parking/spots')
       .then(res => setSpots(res.data || []))
       .catch(console.log)
       .finally(() => setLoading(false));

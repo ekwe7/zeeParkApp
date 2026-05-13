@@ -16,8 +16,10 @@ export default function ParkingScreen({ navigation }) {
   const { activeSession, formatElapsed, calculateCost, startSession, endSession } = useParkingSession();
   const { user } = useAuth();
   const [vehicles, setVehicles] = useState([]);
+  const [spots, setSpots] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedSpot, setSelectedSpot] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -32,9 +34,11 @@ export default function ParkingScreen({ navigation }) {
     if (user?.id) {
       Promise.all([
         client.get(`/api/vehicles/my/${user.id}`),
+        client.get('/api/parking/spots').catch(() => ({ data: [] })),
         client.get(`/api/payments/my/${user.id}`).catch(() => ({ data: [] })),
-      ]).then(([vRes, pRes]) => {
+      ]).then(([vRes, sRes, pRes]) => {
         setVehicles(vRes.data || []);
+        setSpots(sRes.data || []);
         setRecentActivity((pRes.data || []).slice(0, 5));
       }).catch(console.log)
         .finally(() => setLoading(false));
@@ -47,7 +51,7 @@ export default function ParkingScreen({ navigation }) {
     try {
       const res = await client.post('/api/parking/start', {
         vehicleId: selectedVehicle.id,
-        preferredSpotId: null,
+        preferredSpotId: selectedSpot?.id || null,
       });
       await startSession({ ...res.data, vehicleNumberPlate: selectedVehicle.numberPlate, vehicleBaseRate: selectedVehicle.baseRate });
       navigation.navigate('Ticket', { sessionId: res.data.id });
@@ -180,6 +184,37 @@ export default function ParkingScreen({ navigation }) {
               />
             )}
 
+            {/* Spot selection */}
+            {spots.length > 0 && (
+              <>
+                <Text style={[styles.spotLabel, { color: subtext }]}>SELECT SPOT (OPTIONAL)</Text>
+                <FlatList
+                  horizontal
+                  data={spots}
+                  keyExtractor={s => s.id}
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 10, marginBottom: 12 }}
+                  renderItem={({ item }) => {
+                    const sel = selectedSpot?.id === item.id;
+                    return (
+                      <TouchableOpacity
+                        style={[styles.spotChip,
+                          { backgroundColor: sel ? theme.success : card,
+                            borderColor: sel ? theme.success : border }
+                        ]}
+                        onPress={() => setSelectedSpot(sel ? null : item)}
+                      >
+                        <Ionicons name="location" size={14} color={sel ? '#fff' : theme.success} />
+                        <Text style={[styles.vehicleChipText, { color: sel ? '#fff' : subtext }]}>
+                          {item.zoneId?.slice(-6)?.toUpperCase() || item.id?.slice(-6)?.toUpperCase()}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+              </>
+            )}
+
             <TouchableOpacity
               style={[styles.startNewBtn, { backgroundColor: theme.primary }, !selectedVehicle && { opacity: 0.5 }]}
               onPress={startParkingSession}
@@ -266,6 +301,8 @@ const styles = StyleSheet.create({
   endBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   vehicleChip: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1 },
   vehicleChipText: { fontSize: 13, fontWeight: '600' },
+  spotLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, marginBottom: 8 },
+  spotChip: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1 },
   addVehicleBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 14, borderRadius: 12, marginBottom: 12 },
   addVehicleText: { fontSize: 14, fontWeight: '600' },
   startNewBtn: { borderRadius: 16, padding: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

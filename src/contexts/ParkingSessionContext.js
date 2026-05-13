@@ -11,23 +11,23 @@ export function ParkingSessionProvider({ children }) {
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef(null);
 
-  // Restore session only for the currently logged-in user
+  // Restore session on startup and handle user changes
   useEffect(() => {
-    // Reset state immediately when user changes
-    setActiveSession(null);
-    setElapsed(0);
-
-    if (!user?.id) return;
+    if (!user?.id) {
+      setActiveSession(null);
+      setElapsed(0);
+      return;
+    }
 
     (async () => {
-      const saved = await getActiveSession();
-      if (saved && saved.userId === user.id) {
+      const saved = await getActiveSession(user.id);
+      if (saved) {
         setActiveSession(saved);
         const entryTime = new Date(saved.entryTime).getTime();
         setElapsed(Math.floor((Date.now() - entryTime) / 1000));
       } else {
-        // No session or belongs to different user — clear it
-        await clearActiveSession();
+        setActiveSession(null);
+        setElapsed(0);
       }
     })();
   }, [user?.id]);
@@ -55,13 +55,13 @@ export function ParkingSessionProvider({ children }) {
     };
     setActiveSession(sessionWithTime);
     setElapsed(0);
-    await saveActiveSession(sessionWithTime);
+    await saveActiveSession(sessionWithTime, user?.id);
   };
 
   const endSession = async () => {
     setActiveSession(null);
     setElapsed(0);
-    await clearActiveSession();
+    await clearActiveSession(user?.id || activeSession?.userId);
   };
 
   // Format elapsed as HH:MM:SS

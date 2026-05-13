@@ -16,7 +16,7 @@ export default function HomeScreen({ navigation }) {
   const [stats, setStats] = useState({ available: 0, total: 0 });
 
   useEffect(() => {
-    client.get('/api/admin/spots')
+    client.get('/api/parking/spots')
       .then(res => {
         const all = res.data || [];
         setStats({ available: all.filter(s => s.available).length, total: all.length });

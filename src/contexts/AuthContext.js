@@ -22,11 +22,12 @@ export function AuthProvider({ children }) {
     await client.post('/api/auth/logout').catch(() => {});
     await SecureStore.deleteItemAsync('token');
     await SecureStore.deleteItemAsync('user');
-    await clearActiveSession(); // clear parking session on logout
+    // Preserve the active parking session across logout so it can still be completed or paid later.
+    // The session is cleared only when the user explicitly ends it in ParkingSessionContext.
     setToken(null);
     setUser(null);
     setIsLoggedIn(false);
-  }, []);
+  }, [user?.id]);
 
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);

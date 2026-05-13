@@ -20,6 +20,7 @@ import PaymentScreen from '../screens/customer/PaymentScreen';
 import ProfileScreen from '../screens/customer/ProfileScreen';
 import TicketScreen from '../screens/customer/TicketScreen';
 import AllSpotsScreen from '../screens/customer/AllSpotsScreen';
+import MyTicketsScreen from '../screens/customer/MyTicketsScreen';
 
 import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
 import AdminZonesScreen from '../screens/admin/AdminZonesScreen';
@@ -130,6 +131,7 @@ export default function AppNavigator() {
               <Stack.Screen name="Payment" component={PaymentScreen} />
               <Stack.Screen name="Ticket" component={TicketScreen} />
               <Stack.Screen name="AllSpots" component={AllSpotsScreen} />
+              <Stack.Screen name="MyTickets" component={MyTicketsScreen} />
             </>
           )
         ) : (

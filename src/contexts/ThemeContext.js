@@ -7,9 +7,10 @@ export function ThemeProvider({ children }) {
   const [isDark, setIsDark] = useState(false);
   const theme = isDark ? darkTheme : lightTheme;
   const toggleTheme = () => setIsDark(prev => !prev);
+  const resetTheme = () => setIsDark(false); // always back to light
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, isDark, toggleTheme, resetTheme }}>
       {children}
     </ThemeContext.Provider>
   );
