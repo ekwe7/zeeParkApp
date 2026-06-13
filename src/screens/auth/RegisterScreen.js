@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNetwork } from '../../contexts/NetworkContext';
 import OfflineBanner from '../../components/OfflineBanner';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -23,7 +24,7 @@ export default function RegisterScreen({ navigation }) {
       Alert.alert('Success', 'Account created. Please login.');
       navigation.navigate('Login');
     } catch (e) {
-      Alert.alert('Registration failed', e.response?.data?.error || e.message || 'Something went wrong');
+      Alert.alert('Registration failed', getApiErrorMessage(e));
     } finally {
       setLoading(false);
     }

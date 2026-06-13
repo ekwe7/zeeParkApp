@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function AdminLoginScreen({ navigation }) {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const { theme } = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -16,11 +17,12 @@ export default function AdminLoginScreen({ navigation }) {
     try {
       const user = await login(username, password);
       if (user.role !== 'ADMIN') {
+        await logout();
         Alert.alert('Access denied', 'This login is for admins only');
-        // logout immediately if not admin
+        return;
       }
     } catch (e) {
-      Alert.alert('Login failed', e.response?.data?.error || 'Invalid credentials');
+      Alert.alert('Login failed', getApiErrorMessage(e, 'Invalid credentials'));
     } finally {
       setLoading(false);
     }

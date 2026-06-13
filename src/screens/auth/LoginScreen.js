@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNetwork } from '../../contexts/NetworkContext';
 import OfflineBanner from '../../components/OfflineBanner';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -21,7 +22,7 @@ export default function LoginScreen({ navigation }) {
       await login(username, password);
       resetTheme(); // always start in light mode after login
     } catch (e) {
-      Alert.alert('Login failed', e.response?.data?.error || 'Invalid credentials');
+      Alert.alert('Login failed', getApiErrorMessage(e, 'Invalid credentials'));
     } finally {
       setLoading(false);
     }
