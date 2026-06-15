@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  zeepark-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        - EXPO_PUBLIC_API_BASE_URL=${EXPO_PUBLIC_API_BASE_URL:-http://localhost:8181}
+    container_name: zeepark-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - zeepark-frontend-net
+
+networks:
+  zeepark-frontend-net:
+    driver: bridge
