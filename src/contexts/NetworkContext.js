@@ -8,7 +8,7 @@ export function NetworkProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
-      setIsConnected(state.isConnected);
+      setIsConnected(state.isConnected && state.isInternetReachable !== false);
     });
     return unsubscribe;
   }, []);

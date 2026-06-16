@@ -3,25 +3,18 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 
-const LOCAL_HOST_URL = 'http://10.67.91.91:8181';
-const DEFAULT_BASE_URL = Platform.OS === 'android'
-  ? (Constants.isDevice ? LOCAL_HOST_URL : 'http://10.0.2.2:8181')
-  : (Constants.isDevice ? LOCAL_HOST_URL : 'http://localhost:8181');
-
-const EXPO_CONFIG_BASE_URL =
-  Constants.expoConfig?.extra?.apiBaseUrl ||
-  Constants.manifest?.extra?.apiBaseUrl;
+const API_BASE_URL = 'https://zeepark-api.onrender.com';
 
 const BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ||
-  process.env.API_BASE_URL ||
-  EXPO_CONFIG_BASE_URL ||
-  DEFAULT_BASE_URL;
+  API_BASE_URL;
+
+console.log('Using API Base URL:', BASE_URL);
 
 const client = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+  timeout: 60000, // 60 seconds for Render cold starts
 });
 
 // Attach token to every request automatically
@@ -42,7 +35,15 @@ client.interceptors.response.use(
     if (_resetTimer) _resetTimer();
     return response;
   },
-  (error) => Promise.reject(error)
+  async (error) => {
+    const config = error.config;
+    // Retry once on timeout or network error (Render cold start)
+    if (!config._retried && (error.code === 'ECONNABORTED' || !error.response)) {
+      config._retried = true;
+      return client(config);
+    }
+    return Promise.reject(error);
+  }
 );
 
 export default client;
